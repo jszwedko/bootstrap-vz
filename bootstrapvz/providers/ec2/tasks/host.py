@@ -11,8 +11,8 @@ class AddExternalCommands(Task):
 	@classmethod
 	def run(cls, info):
 		if info.manifest.volume['backing'] == 's3':
-			info.host_dependencies['euca-bundle-image'] = 'euca2ools'
-			info.host_dependencies['euca-upload-bundle'] = 'euca2ools'
+			info.host_dependencies['ec2-bundle-image'] = 'ec2-ami-tools'
+			info.host_dependencies['euca-upload-bundle'] = 'ec2-ami-tools'
 
 
 class GetInstanceMetadata(Task):

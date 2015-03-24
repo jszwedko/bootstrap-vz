@@ -5,10 +5,7 @@ from bootstrapvz.common.tools import log_check_call
 from ebs import Snapshot
 from bootstrapvz.common.tasks import workspace
 from connection import Connect
-from . import assets
 import os.path
-
-cert_ec2 = os.path.join(assets, 'certs/cert-ec2.pem')
 
 
 class AMIName(Task):
@@ -38,14 +35,14 @@ class BundleImage(Task):
 	def run(cls, info):
 		bundle_name = 'bundle-' + info.run_id
 		info._ec2['bundle_path'] = os.path.join(info.workspace, bundle_name)
+		os.mkdir(info._ec2['bundle_path'])
 		arch = {'i386': 'i386', 'amd64': 'x86_64'}.get(info.manifest.system['architecture'])
-		log_check_call(['euca-bundle-image',
+		log_check_call(['ec2-bundle-image',
 		                '--image', info.volume.image_path,
 		                '--arch', arch,
 		                '--user', info.credentials['user-id'],
 		                '--privatekey', info.credentials['private-key'],
 		                '--cert', info.credentials['certificate'],
-		                '--ec2cert', cert_ec2,
 		                '--destination', info._ec2['bundle_path'],
 		                '--prefix', info._ec2['ami_name']])
 
@@ -65,14 +62,13 @@ class UploadImage(Task):
 		else:
 			s3_url = 'https://s3-{region}.amazonaws.com/'.format(region=info._ec2['region'])
 		info._ec2['manifest_location'] = info.manifest.image['bucket'] + '/' + info._ec2['ami_name'] + '.manifest.xml'
-		log_check_call(['euca-upload-bundle',
+		log_check_call(['ec2-upload-bundle',
 		                '--bucket', info.manifest.image['bucket'],
 		                '--manifest', manifest_file,
 		                '--access-key', info.credentials['access-key'],
 		                '--secret-key', info.credentials['secret-key'],
 		                '--url', s3_url,
-		                '--region', info._ec2['region'],
-		                '--ec2cert', cert_ec2])
+		                '--region', info._ec2['region']])
 
 
 class RemoveBundle(Task):
