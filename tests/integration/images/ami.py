@@ -22,7 +22,9 @@ class AmazonMachineImage(Image):
 
 	def destroy(self):
 		log.debug('Deleting AMI')
-		self.ami.deregister(delete_snapshot=True)
+		self.ami.deregister()
+		for snapshot in self.ami.block_device_mapping:
+			snapshot.delete()
 		del self.ami
 
 	@contextmanager
